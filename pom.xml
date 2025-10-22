@@ -14,7 +14,7 @@
         <project.report.sourceEncoding>UTF-8</project.report.sourceEncoding>
 
         <!-- maven plugins -->
-        <maven.compiler.release>21</maven.compiler.release>
+        <maven.compiler.release>25</maven.compiler.release>
         <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
         <maven-shade-plugin.version>3.6.0</maven-shade-plugin.version>
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
@@ -23,7 +23,7 @@
 
         <!-- dependencies -->
         <weld.version>6.0.2.Final</weld.version>
-        <javafx.version>21.0.2</javafx.version>
+        <javafx.version>25.0.1</javafx.version>
         <weld-junit5.version>5.0.1.Final</weld-junit5.version>
         <wiremock.version>3.13.1</wiremock.version>
 
@@ -185,6 +185,7 @@
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <argLine>--enable-preview</argLine>
+                    <argLine>-Dnet.bytebuddy.experimental=true</argLine>
                 </configuration>
             </plugin>
         </plugins>
