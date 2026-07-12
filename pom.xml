@@ -184,8 +184,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
-                    <argLine>--enable-preview</argLine>
-                    <argLine>-Dnet.bytebuddy.experimental=true</argLine>
+                    <argLine>--enable-preview -Dnet.bytebuddy.experimental=true</argLine>
                 </configuration>
             </plugin>
         </plugins>

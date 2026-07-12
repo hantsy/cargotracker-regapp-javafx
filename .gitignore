@@ -27,4 +27,5 @@ nb-*
 *.iml
 
 target
+dependency-reduced-pom.xml
 
