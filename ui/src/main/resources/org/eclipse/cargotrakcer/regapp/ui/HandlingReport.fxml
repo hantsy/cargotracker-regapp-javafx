@@ -71,7 +71,7 @@
             <Label id="voyageNumberLabel" text="VoyageNumber" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
             <TextField fx:id="voyageNumberField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
 
-            <Button id="submitButton" onAction="#onSubmit" text="Submit Report" GridPane.columnIndex="1"
+            <Button fx:id="submitButton" onAction="#onSubmit" text="Submit Report" GridPane.columnIndex="1"
                     GridPane.rowIndex="5"/>
             <Text fx:id="message" text="Please fill all fields" GridPane.columnIndex="1" GridPane.columnSpan="2"
                   GridPane.rowIndex="6"/>

@@ -43,6 +43,7 @@
         <mockito.version>5.23.0</mockito.version>
         <hibernate-validator.version>8.0.2.Final</hibernate-validator.version>
         <controlsfx.version>11.2.2</controlsfx.version>
+        <jakarta.cdi-api.version>4.1.0</jakarta.cdi-api.version>
     </properties>
 
     <dependencyManagement>
@@ -119,7 +120,7 @@
             <dependency>
                 <groupId>jakarta.enterprise</groupId>
                 <artifactId>jakarta.enterprise.cdi-api</artifactId>
-                <version>4.1.0</version>
+                <version>${jakarta.cdi-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate.validator</groupId>

@@ -1,6 +1,7 @@
 package org.eclipse.cargotrakcer.regapp.ui;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.TextField;
@@ -55,6 +56,9 @@ public class HandlingReportController {
     private TextField voyageNumberField;
 
     @FXML
+    private Button submitButton;
+
+    @FXML
     private Text message;
 
     @FXML
@@ -99,7 +103,7 @@ public class HandlingReportController {
         validationSupport = new ValidationSupport();
         validationSupport.setValidationDecorator(new StyleClassValidationDecoration());
 
-        // Completion time is required (DateTimePicker from TornadoFX - use control-ref validator)
+        // 1. Completion time is required (DateTimePicker - custom validator)
         validationSupport.registerValidator(completionTimeField, false,
                 (control, value) ->
                         ValidationResult.fromErrorIf(control,
@@ -107,8 +111,8 @@ public class HandlingReportController {
                                 ((DateTimePicker) control).getDateTimeValue() == null
                         ));
 
-        // Tracking ID: required, min 4 chars
-        validationSupport.registerValidator(trackingIdField,
+        // 2. Tracking ID: required, min 4 chars
+        validationSupport.registerValidator(trackingIdField, true,
                 Validator.createPredicateValidator(
                         o -> {
                             var s = (String) o;
@@ -118,16 +122,12 @@ public class HandlingReportController {
                         Severity.ERROR
                 ));
 
-        // Event type: must be selected
-        validationSupport.registerValidator(eventTypeField,
-                Validator.createPredicateValidator(
-                        o -> o != null && !((String) o).isBlank(),
-                        "Event type is required",
-                        Severity.ERROR
-                ));
+        // 3. Event type: required selection
+        validationSupport.registerValidator(eventTypeField, true,
+                Validator.createEmptyValidator("Event type is required"));
 
-        // UN Locode: required, exactly 5 chars
-        validationSupport.registerValidator(unLocodeField,
+        // 4. UN Locode: required, exactly 5 chars
+        validationSupport.registerValidator(unLocodeField, true,
                 Validator.createPredicateValidator(
                         o -> {
                             var s = (String) o;
@@ -137,8 +137,8 @@ public class HandlingReportController {
                         Severity.ERROR
                 ));
 
-        // Voyage number: optional, but if filled min 4 chars
-        validationSupport.registerValidator(voyageNumberField,
+        // 5. Voyage number: optional, but if filled min 4 chars
+        validationSupport.registerValidator(voyageNumberField, false,
                 Validator.createPredicateValidator(
                         o -> {
                             var s = (String) o;
@@ -147,17 +147,14 @@ public class HandlingReportController {
                         "Voyage number must be at least 4 characters",
                         Severity.ERROR
                 ));
+
+        // Bind submit button to validation state — disabled when form is invalid
+        submitButton.disableProperty().bind(validationSupport.invalidProperty());
     }
 
     @FXML
     private void onSubmit() {
         LOGGER.log(Level.INFO, "injected HandlingReportService: {0}", this.handlingReportService);
-
-        if (validationSupport.isInvalid()) {
-            message.setText("Please fix validation errors");
-            message.setFill(Color.RED);
-            return;
-        }
 
         var completionTime = completionTimeField.getDateTimeValue();
         var trackingId = trackingIdField.getText();
