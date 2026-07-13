@@ -1,24 +1,27 @@
 package org.eclipse.cargotrakcer.regapp.client;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 public class HandlingReport {
 
-    //@NotNull
-    //@Size(min = 16, max = 16)
+    @NotBlank
+    @Size(min = 16, max = 16)
     private String completionTime;
 
-    //@NotNull
-    //@Size(min = 4)
+    @NotBlank
+    @Size(min = 4)
     private String trackingId;
 
-    //@NotNull
-    //@Size(min = 4, max = 7)
+    @NotBlank
+    @Size(min = 4, max = 7)
     private String eventType;
 
-    //@NotNull
-    //@Size(min = 5, max = 5)
+    @NotBlank
+    @Size(min = 5, max = 5)
     private String unLocode;
 
-    //@Size(min = 4, max = 5)
+    @Size(min = 4, max = 5)
     private String voyageNumber;
 
     public String getCompletionTime() {

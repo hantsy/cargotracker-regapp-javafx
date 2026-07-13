@@ -51,5 +51,10 @@
             <artifactId>weld-junit5</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator-cdi</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

@@ -41,6 +41,7 @@
         <javafx-weaver-core.version>2.0.1</javafx-weaver-core.version>
         <junit.version>6.0.3</junit.version>
         <mockito.version>5.23.0</mockito.version>
+        <hibernate-validator.version>8.0.2.Final</hibernate-validator.version>
     </properties>
 
     <dependencyManagement>
@@ -118,6 +119,16 @@
                 <groupId>jakarta.enterprise</groupId>
                 <artifactId>jakarta.enterprise.cdi-api</artifactId>
                 <version>4.1.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.validator</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>${hibernate-validator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.validator</groupId>
+                <artifactId>hibernate-validator-cdi</artifactId>
+                <version>${hibernate-validator.version}</version>
             </dependency>
             <!-- inter-module dependencies -->
             <dependency>
