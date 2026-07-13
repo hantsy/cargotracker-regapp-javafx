@@ -2,13 +2,16 @@ package org.eclipse.cargotrakcer.regapp.ui;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Control;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import net.rgielen.fxweaver.core.FxmlView;
+import org.controlsfx.validation.Severity;
+import org.controlsfx.validation.ValidationResult;
+import org.controlsfx.validation.ValidationSupport;
+import org.controlsfx.validation.Validator;
+import org.controlsfx.validation.decoration.StyleClassValidationDecoration;
 import org.eclipse.cargotrakcer.regapp.client.HandlingReport;
 import org.eclipse.cargotrakcer.regapp.client.HandlingReportService;
 import org.eclipse.cargotrakcer.regapp.client.HandlingResponse;
@@ -18,13 +21,10 @@ import tornadofx.control.DateTimePicker;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
 import java.awt.*;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,8 +37,7 @@ public class HandlingReportController {
     @Inject
     private HandlingReportService handlingReportService;
 
-    @Inject
-    private Validator validator;
+    private ValidationSupport validationSupport;
 
     @FXML
     private DateTimePicker completionTimeField;
@@ -92,11 +91,74 @@ public class HandlingReportController {
         };
         githubLink.setOnAction(e -> openUrl.accept("https://github.com/hantsy/cargotracker-regapp"));
         twitterLink.setOnAction(e -> openUrl.accept("https://twitter.com/@hantsy"));
+
+        setupValidation();
+    }
+
+    private void setupValidation() {
+        validationSupport = new ValidationSupport();
+        validationSupport.setValidationDecorator(new StyleClassValidationDecoration());
+
+        // Completion time is required (DateTimePicker from TornadoFX - use control-ref validator)
+        validationSupport.registerValidator(completionTimeField, false,
+                (control, value) ->
+                        ValidationResult.fromErrorIf(control,
+                                "Completion time is required",
+                                ((DateTimePicker) control).getDateTimeValue() == null
+                        ));
+
+        // Tracking ID: required, min 4 chars
+        validationSupport.registerValidator(trackingIdField,
+                Validator.createPredicateValidator(
+                        o -> {
+                            var s = (String) o;
+                            return s != null && !s.isBlank() && s.length() >= 4;
+                        },
+                        "Tracking ID must be at least 4 characters",
+                        Severity.ERROR
+                ));
+
+        // Event type: must be selected
+        validationSupport.registerValidator(eventTypeField,
+                Validator.createPredicateValidator(
+                        o -> o != null && !((String) o).isBlank(),
+                        "Event type is required",
+                        Severity.ERROR
+                ));
+
+        // UN Locode: required, exactly 5 chars
+        validationSupport.registerValidator(unLocodeField,
+                Validator.createPredicateValidator(
+                        o -> {
+                            var s = (String) o;
+                            return s != null && !s.isBlank() && s.length() == 5;
+                        },
+                        "Location must be 5 characters",
+                        Severity.ERROR
+                ));
+
+        // Voyage number: optional, but if filled min 4 chars
+        validationSupport.registerValidator(voyageNumberField,
+                Validator.createPredicateValidator(
+                        o -> {
+                            var s = (String) o;
+                            return s == null || s.isBlank() || s.trim().length() >= 4;
+                        },
+                        "Voyage number must be at least 4 characters",
+                        Severity.ERROR
+                ));
     }
 
     @FXML
     private void onSubmit() {
         LOGGER.log(Level.INFO, "injected HandlingReportService: {0}", this.handlingReportService);
+
+        if (validationSupport.isInvalid()) {
+            message.setText("Please fix validation errors");
+            message.setFill(Color.RED);
+            return;
+        }
+
         var completionTime = completionTimeField.getDateTimeValue();
         var trackingId = trackingIdField.getText();
         var eventType = eventTypeField.getValue();
@@ -117,15 +179,6 @@ public class HandlingReportController {
                 .build();
         LOGGER.log(Level.INFO, "submitting report: {0}", report);
 
-        // Validate report data.
-        Set<ConstraintViolation<HandlingReport>> violations = validator.validate(report);
-        if (!violations.isEmpty()) {
-            LOGGER.log(Level.WARNING, "validation failed: {0}", violations);
-            showValidationErrors(violations);
-            return;
-        }
-
-        clearValidationErrors();
         this.handlingReportService.submitReport(report)
                 .thenAccept(handlingResponse -> {
 
@@ -150,42 +203,5 @@ public class HandlingReportController {
                     return null;
                 })
                 .join();
-    }
-
-    private void showValidationErrors(Set<ConstraintViolation<HandlingReport>> violations) {
-        clearValidationErrors();
-        for (ConstraintViolation<HandlingReport> violation : violations) {
-            Control field = resolveField(violation.getPropertyPath().toString());
-            if (field != null) {
-                field.getStyleClass().add("error");
-                field.setTooltip(new Tooltip(violation.getMessage()));
-            }
-        }
-        message.setText("Please fix validation errors");
-        message.setFill(Color.RED);
-    }
-
-    private void clearValidationErrors() {
-        completionTimeField.getStyleClass().remove("error");
-        completionTimeField.setTooltip(null);
-        trackingIdField.getStyleClass().remove("error");
-        trackingIdField.setTooltip(null);
-        eventTypeField.getStyleClass().remove("error");
-        eventTypeField.setTooltip(null);
-        unLocodeField.getStyleClass().remove("error");
-        unLocodeField.setTooltip(null);
-        voyageNumberField.getStyleClass().remove("error");
-        voyageNumberField.setTooltip(null);
-    }
-
-    private Control resolveField(String propertyName) {
-        return switch (propertyName) {
-            case "completionTime" -> completionTimeField;
-            case "trackingId" -> trackingIdField;
-            case "eventType" -> eventTypeField;
-            case "unLocode" -> unLocodeField;
-            case "voyageNumber" -> voyageNumberField;
-            default -> null;
-        };
     }
 }

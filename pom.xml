@@ -42,6 +42,7 @@
         <junit.version>6.0.3</junit.version>
         <mockito.version>5.23.0</mockito.version>
         <hibernate-validator.version>8.0.2.Final</hibernate-validator.version>
+        <controlsfx.version>11.2.2</controlsfx.version>
     </properties>
 
     <dependencyManagement>
@@ -129,6 +130,11 @@
                 <groupId>org.hibernate.validator</groupId>
                 <artifactId>hibernate-validator-cdi</artifactId>
                 <version>${hibernate-validator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.controlsfx</groupId>
+                <artifactId>controlsfx</artifactId>
+                <version>${controlsfx.version}</version>
             </dependency>
             <!-- inter-module dependencies -->
             <dependency>
