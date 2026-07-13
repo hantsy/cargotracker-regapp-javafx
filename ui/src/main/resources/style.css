@@ -19,3 +19,12 @@
     -fx-border-width: 2px;
     -fx-border-radius: 3px;
 }
+
+.validation-error {
+    -fx-text-fill: red;
+    -fx-font-size: 11px;
+}
+
+.clickable-icon {
+    -fx-cursor: hand;
+}

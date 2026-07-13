@@ -3,7 +3,8 @@ package org.eclipse.cargotrakcer.regapp.ui;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Hyperlink;
+import javafx.scene.image.ImageView;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -12,7 +13,11 @@ import org.controlsfx.validation.Severity;
 import org.controlsfx.validation.ValidationResult;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
+import org.controlsfx.validation.ValidationMessage;
 import org.controlsfx.validation.decoration.StyleClassValidationDecoration;
+
+import java.util.HashMap;
+import java.util.Map;
 import org.eclipse.cargotrakcer.regapp.client.HandlingReport;
 import org.eclipse.cargotrakcer.regapp.client.HandlingReportService;
 import org.eclipse.cargotrakcer.regapp.client.HandlingResponse;
@@ -26,6 +31,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,6 +45,7 @@ public class HandlingReportController {
     private HandlingReportService handlingReportService;
 
     private ValidationSupport validationSupport;
+    private Map<javafx.scene.control.Control, Label> errorLabelMap;
 
     @FXML
     private DateTimePicker completionTimeField;
@@ -59,13 +66,31 @@ public class HandlingReportController {
     private Button submitButton;
 
     @FXML
+    private Label completionTimeError;
+
+    @FXML
+    private Label trackingIdError;
+
+    @FXML
+    private Label unLocodeError;
+
+    @FXML
+    private Label eventTypeError;
+
+    @FXML
+    private Label voyageNumberError;
+
+    @FXML
     private Text message;
 
     @FXML
-    private Hyperlink githubLink;
+    private ImageView githubIcon;
 
     @FXML
-    private Hyperlink twitterLink;
+    private ImageView linkedinIcon;
+
+    @FXML
+    private ImageView twitterIcon;
 
     public HandlingReportController() {
         LOGGER.log(Level.INFO, "calling constructor method.");
@@ -93,8 +118,13 @@ public class HandlingReportController {
                 e.printStackTrace();
             }
         };
-        githubLink.setOnAction(e -> openUrl.accept("https://github.com/hantsy/cargotracker-regapp"));
-        twitterLink.setOnAction(e -> openUrl.accept("https://twitter.com/@hantsy"));
+        githubIcon.setOnMouseClicked(e -> openUrl.accept("https://github.com/hantsy/cargotracker-regapp"));
+        linkedinIcon.setOnMouseClicked(e -> openUrl.accept("https://linkedin.com/in/hantsy"));
+        twitterIcon.setOnMouseClicked(e -> openUrl.accept("https://twitter.com/@hantsy"));
+
+        // Initialize completion time with current time and format
+        completionTimeField.setFormat(DateUtil.DATE_TIME_FORMAT);
+        completionTimeField.setDateTimeValue(LocalDateTime.now());
 
         setupValidation();
     }
@@ -104,7 +134,7 @@ public class HandlingReportController {
         validationSupport.setValidationDecorator(new StyleClassValidationDecoration());
 
         // 1. Completion time is required (DateTimePicker - custom validator)
-        validationSupport.registerValidator(completionTimeField, false,
+        validationSupport.registerValidator(completionTimeField, true,
                 (control, value) ->
                         ValidationResult.fromErrorIf(control,
                                 "Completion time is required",
@@ -148,8 +178,37 @@ public class HandlingReportController {
                         Severity.ERROR
                 ));
 
+        // Map controls to their error labels
+        errorLabelMap = new HashMap<>();
+        errorLabelMap.put(completionTimeField, completionTimeError);
+        errorLabelMap.put(trackingIdField, trackingIdError);
+        errorLabelMap.put(unLocodeField, unLocodeError);
+        errorLabelMap.put(eventTypeField, eventTypeError);
+        errorLabelMap.put(voyageNumberField, voyageNumberError);
+
+        // Listen for validation changes to update error labels
+        validationSupport.validationResultProperty().addListener((obs, oldVal, newVal) -> updateErrorLabels());
+
         // Bind submit button to validation state — disabled when form is invalid
         submitButton.disableProperty().bind(validationSupport.invalidProperty());
+    }
+
+    private void updateErrorLabels() {
+        var errors = validationSupport.getValidationResult().getErrors();
+        for (var entry : errorLabelMap.entrySet()) {
+            var controlMessages = errors.stream()
+                    .filter(m -> m.getTarget() == entry.getKey())
+                    .toList();
+            Label label = entry.getValue();
+            if (controlMessages.isEmpty()) {
+                label.setVisible(false);
+                label.setManaged(false);
+            } else {
+                label.setText(controlMessages.get(0).getText());
+                label.setVisible(true);
+                label.setManaged(true);
+            }
+        }
     }
 
     @FXML

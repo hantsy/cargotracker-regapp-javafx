@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter;
 // TODO [Clean Code] Make this a CDI singleton?
 public class DateUtil {
     public static final String DATE_FORMAT = "M/d/yyyy";
-    public static final String DATE_TIME_FORMAT = "M/d/yyyy h:m a";
+    public static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm";
 
     private static final DateTimeFormatter DATE_FORMATTER =
             DateTimeFormatter.ofPattern(DATE_FORMAT).withZone(ZoneId.systemDefault());
